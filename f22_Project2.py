@@ -71,7 +71,41 @@ def get_listing_information(listing_id):
         number of bedrooms
     )
     """
-    pass
+    f = open('html_files/listing_'+ listing_id + '.html', 'r')
+    file = f.read()
+    f.close()
+    soup = BeautifulSoup(file, 'html.parser')
+
+    policy_num = soup.find('li', class_ = 'f19phm7j dir dir-ltr')
+    policy_num = re.findall(r'(?:STR)?(?:\d+)?-?\d+(?:STR)?|Pending|pending|Exempt|exempt', policy_num.text)
+    if policy_num == []:
+        policy_num = 'Exempt'
+    elif 'pending' in policy_num or 'Pending' in policy_num:
+        policy_num = 'Pending'
+    else:
+        policy_num = policy_num[0]
+
+    place_type = soup.find('h2', class_ = '_14i3z6h')
+    place_type = re.findall(r'[Pp]rivate?|[Ss]hared?')
+    if 'Private' in place_type or 'private' in place_type:
+        place_type = 'Private Room'
+    elif 'Shared' in place_type or 'shared' in place_type:
+        place_type = 'Shared Room'
+    else:
+        place_type = 'Entire Room'
+    
+    bedroom_info = soup.find('div', class_ = '_tqmy57')
+    for x in bedroom_info:
+        li_list = x.find_all('li', class_ = 'l7n4lsf dir dir-ltr')
+        for y in li_list:
+            span_list = y.find_all('span')
+            for i in span_list:
+                bedrooms = re.findall(r'^(\d)\sbedrooms?$', i.text)
+                if bedrooms != []:
+                    rooms = int(bedrooms[0])
+    tup = (policy_num, place_type, rooms)
+    return tup
+
 
 
 def get_detailed_listing_database(html_file):
@@ -113,7 +147,13 @@ def write_csv(data, filename):
 
     This function should not return anything.
     """
-    pass
+    data.sort(key = lambda x:x[1])
+    with open(filename, 'w', newline = '') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Listing Title', 'Cost', 'Listing ID', 'Policy Number', 'Place Type', 'Number of Rooms'])
+        for i in range(len(data)):
+            writer.writerow(data[i])
+    return None
 
 
 def check_policy_numbers(data):
