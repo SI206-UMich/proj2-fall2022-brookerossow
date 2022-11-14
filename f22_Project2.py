@@ -4,6 +4,9 @@ import re
 import os
 import csv
 import unittest
+#Name: Brooke Rossow
+#Uniquename: Berossow
+#Partners: Anabelle Phillips, Sean Scully
 
 
 def get_listings_from_search_results(html_file):
@@ -25,7 +28,23 @@ def get_listings_from_search_results(html_file):
         ('Loft in Mission District', 210, '1944564'),  # example
     ]
     """
-    pass
+    f = open(html_file, 'r')
+    html = f.read()
+    f.close()
+
+    soup = BeautifulSoup(html, 'html.parser')
+    listing_title = soup.find_all('div', class_ = 't1jojoys dir dir-ltr')
+    cost = soup.find_all('span', class_ = '_tyxjp1')
+    listing_id = soup.find_all('a', class_ = 'ln2bl2p dir dir-ltr')
+
+    for i in range(len(listing_id)):
+        listing_id[i] = re.findall(r'\d+', listing_id[i]['href'])
+
+    listing_info = []
+    for i in range(len(listing_title)):
+        listing_info.append((listing_title[i].text, int(cost[i].text.strip('$')), listing_id[i][0]))
+
+    return listing_info
 
 
 def get_listing_information(listing_id):
