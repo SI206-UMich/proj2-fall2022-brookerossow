@@ -71,9 +71,11 @@ def get_listing_information(listing_id):
         number of bedrooms
     )
     """
-    f = open('html_files/listing_'+ listing_id + '.html', 'r')
+    global rooms
+    f = open(f"html_files/listing_{listing_id}.html", 'r', encoding="utf-8")
     file = f.read()
     f.close()
+
     soup = BeautifulSoup(file, 'html.parser')
 
     policy_num = soup.find('li', class_ = 'f19phm7j dir dir-ltr')
@@ -86,7 +88,7 @@ def get_listing_information(listing_id):
         policy_num = policy_num[0]
 
     place_type = soup.find('h2', class_ = '_14i3z6h')
-    place_type = re.findall(r'[Pp]rivate?|[Ss]hared?')
+    place_type = re.findall(r'[Pp]rivate?|[Ss]hared?', place_type.text)
     if 'Private' in place_type or 'private' in place_type:
         place_type = 'Private Room'
     elif 'Shared' in place_type or 'shared' in place_type:
@@ -157,7 +159,7 @@ def write_csv(data, filename):
     data.sort(key = lambda x:x[1])
     with open(filename, 'w', newline = '') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['Listing Title', 'Cost', 'Listing ID', 'Policy Number', 'Place Type', 'Number of Rooms'])
+        writer.writerow(['Listing Title', 'Cost', 'Listing ID', 'Policy Number', 'Place Type', 'Number of Bedrooms'])
         for i in range(len(data)):
             writer.writerow(data[i])
     return None
@@ -209,7 +211,26 @@ def extra_credit(listing_id):
     gone over their 90 day limit, else return True, indicating the lister has
     never gone over their limit.
     """
-    pass
+    
+    f = open('html_files/' + listing_id + '_reviews.html', 'r')
+    file = f.read()
+    f.close()
+
+    soup = BeautifulSoup(file, 'html.parser')
+    review_dates = soup.find_all('li', class_ = '+1f1oir5')
+    year = []
+    for i in range(len(review_dates)):
+        year.append(re.findall(r'\d{4}', review_dates[i].text))
+    year_count = {}
+    for i in range(len(year)):
+        if year[i][0] in year_count:
+            year_count[year[i][0]] += 1
+        else:
+            year_count[year[i][0]] = 1
+    for i in year_count:
+        if year_count[i] > 90:
+            return False
+    return True
 
 
 class TestCases(unittest.TestCase):
