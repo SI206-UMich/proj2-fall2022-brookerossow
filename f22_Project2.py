@@ -212,12 +212,12 @@ def extra_credit(listing_id):
     never gone over their limit.
     """
     
-    f = open('html_files/' + listing_id + '_reviews.html', 'r')
+    f = open('html_files/listing_' + listing_id + '_reviews.html', 'r', encoding="utf-8")
     file = f.read()
     f.close()
 
     soup = BeautifulSoup(file, 'html.parser')
-    review_dates = soup.find_all('li', class_ = '+1f1oir5')
+    review_dates = soup.find_all('li', class_ = '_1f1oir5')
     year = []
     for i in range(len(review_dates)):
         year.append(re.findall(r'\d{4}', review_dates[i].text))
@@ -331,6 +331,11 @@ class TestCases(unittest.TestCase):
         self.assertEqual(type(invalid_listings[0]), str)
         # check that the first element in the list is '16204265'
         self.assertEqual(invalid_listings[0], '16204265')
+
+    def test_extra_credit(self):
+        self.assertEqual(extra_credit('16204265'), False)
+        self.assertEqual(extra_credit('1944564'), True)
+
 
 
 if __name__ == '__main__':
